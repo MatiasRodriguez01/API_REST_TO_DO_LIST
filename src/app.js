@@ -1,31 +1,33 @@
-const express = require("express")
-const bodyParser = require("body-parser")
-const mongoose = require("mongoose")
+const express = require("express");
+const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
 const { config } = require("dotenv");
 
-config();
+config(); // Carga las variables de entorno
 
-// ruta de task
-const taskRouters = require("./routes/tasks.routes")
+const taskRouters = require("./routes/tasks.routes");
+const springRouters = require("./routes/sprint.routes");
+const backlogRouters = require("./routes/backlog.routes");
 
-// corremos el app express
 const app = express();
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 
-// corremos la base de datos
-mongoose.connect(process.env.MONGO_URL, { dbName: process.env.MONGO_BD_NAME })
-    .then(() => console.log("Conectando a mongo"))
-    .catch((err) => console.error("Error conectando a MongoDB: ", err))
+// Conexión con MongoDB Atlas
+mongoose.connect(process.env.MONGO_URL, {
+    dbName: process.env.MONGO_BD_NAME,
+  })
+    .then(() => console.log("✅ Conectado a Mongo Atlas"))
+    .catch((err) => console.error("❌ Error conectando a MongoDB: ", err));
 
 const db = mongoose.connection;
 
-app.use("/tasks", taskRouters) 
+// Rutas
+app.use("/tasks", taskRouters);
+app.use("/springs", springRouters);
+app.use("/backlog", backlogRouters);
 
-
-// usamos el puerto de las variale de entorno
-const port = process.env.PORT;
-
-// escuchamos el puerto
+// Puerto
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
-    console.log(`Escuchando el puerto: ${port}`)
-})
+    console.log(`🚀 Servidor corriendo en el puerto ${port}`);
+});

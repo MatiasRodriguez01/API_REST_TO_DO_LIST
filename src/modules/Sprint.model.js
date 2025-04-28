@@ -6,7 +6,7 @@ const spring = new mongoose.Schema(
     {
         fecha_inicio: String,
         fecha_cierre: String,
-        lista_tarea: [],
+        tareas: [],
         color: String
     }
 )
