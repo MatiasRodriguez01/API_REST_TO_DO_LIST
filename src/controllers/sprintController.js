@@ -36,7 +36,6 @@ const getAllSpringController = async (req, res) => {
     try {
         // obtenemos todas las tareas
         const springs = await Spring.find();
-        console.log("GET ALL springs: ", springs)
 
         // preguntamos que si las tareas existen
         if (springs.length === 0) {
@@ -55,7 +54,7 @@ const getAllSpringController = async (req, res) => {
 }
 
 const postSpringController = async (req, res) => {
-    const { fecha_inicio, fecha_cierre, tareas, color } = req.body;
+    const { nombre, fecha_inicio, fecha_cierre, tareas, color } = req.body;
     if (!fecha_inicio || !fecha_cierre) {
         return res.status(400).json({
             message: "Los parametros titulo, descripcion, estado y fecha limite son obligatorios"
@@ -63,6 +62,7 @@ const postSpringController = async (req, res) => {
     }
     const newSpring = new Spring(
         {
+            nombre,
             fecha_inicio,
             fecha_cierre,
             tareas,
@@ -72,7 +72,6 @@ const postSpringController = async (req, res) => {
 
     try {
         const springSaved = await newSpring.save();
-        console.log("Nuevo spring: ", springSaved)
         res.status(201).json(springSaved)
     } catch (error) {
         return res.status(400).json({
@@ -85,9 +84,10 @@ const postSpringController = async (req, res) => {
 const putSpringController = async (req, res) => {
     try {
         const spring = res.spring;
-        spring.fecha_inicio = req.body.fecha_inicio = spring.fecha_inicio;
-        spring.fecha_cierre = req.body.fecha_cierre = spring.fecha_cierre;
-        spring.color = req.body.color = spring.color;
+        spring.nombre = req.body.nombre || spring.nombre
+        spring.fecha_inicio = req.body.fecha_inicio || spring.fecha_inicio;
+        spring.fecha_cierre = req.body.fecha_cierre || spring.fecha_cierre;
+        spring.color = req.body.color || spring.color;
 
         const updateSpring = await spring.save();
         res.json(updateSpring)
@@ -106,9 +106,10 @@ const patchSpringController = async (req, res) => {
     }
     try {
         const spring = res.spring;
-        spring.fecha_inicio = req.body.fecha_inicio = spring.fecha_inicio;
-        spring.fecha_cierre = req.body.fecha_cierre = spring.fecha_cierre;
-        spring.color = req.body.color = spring.color;
+        spring.nombre = req.body.nombre || spring.nombre
+        spring.fecha_inicio = req.body.fecha_inicio || spring.fecha_inicio;
+        spring.fecha_cierre = req.body.fecha_cierre || spring.fecha_cierre;
+        spring.color = req.body.color || spring.color;
 
         const updateSpring = await spring.save();
         res.json(updateSpring)
@@ -169,7 +170,6 @@ const getTaskByIdSpringController = async (req, res) => {
     try {
 
         const task = spring.tareas.find((tarea) => tarea._id.equals(taskId));
-        console.log("Tarea: ", task)
         if (!task) {
             res.status(404).json(
                 {
@@ -187,7 +187,7 @@ const getTaskByIdSpringController = async (req, res) => {
 
 }
 
-const putTaskSpringController = async (req, res) => {
+const createTaskSpringController = async (req, res) => {
 
     try {
         let task = req.body;
@@ -217,6 +217,47 @@ const putTaskSpringController = async (req, res) => {
         )
     }
 }
+
+const updateTaskSpringController = async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const spring = res.spring;
+
+    if (!taskId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(404).json({ message: "El id de la tarea no es válido" });
+    }
+
+    // Buscar la tarea en la base de datos
+    const task = await Task.findById(taskId);
+    if (!task) {
+      return res.status(404).json({ message: "La tarea no se encontró" });
+    }
+
+    // Actualizar sus campos
+    task.titulo = req.body.titulo || task.titulo;
+    task.descripcion = req.body.descripcion || task.descripcion;
+    task.estado = req.body.estado || task.estado;
+    task.fecha_limite = req.body.fecha_limite || task.fecha_limite;
+    task.color = req.body.color || task.color;
+
+    await task.save();
+
+    // Actualizar la referencia en el spring
+    spring.tareas = spring.tareas.map((tarea) =>
+      tarea._id.equals(taskId) ? task : tarea
+    );
+
+    await spring.save();
+
+    return res.status(200).json(task);
+
+  } catch (error) {
+    return res.status(500).json({
+      message: `Ocurrió un error en updateTaskSpringController: ${error.message}`
+    });
+  }
+};
+
 
 const deleteTaskSpringController = async (req, res) => {
 
@@ -264,6 +305,7 @@ module.exports = {
     deletePatchController,
     getTaskSpringController,
     getTaskByIdSpringController,
-    putTaskSpringController,
+    createTaskSpringController,
+    updateTaskSpringController,
     deleteTaskSpringController
 }

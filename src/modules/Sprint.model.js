@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 
 const spring = new mongoose.Schema(
     {
+        nombre: String,
         fecha_inicio: String,
         fecha_cierre: String,
         tareas: [],

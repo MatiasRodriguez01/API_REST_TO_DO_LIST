@@ -12,7 +12,8 @@ const {
     deletePatchController,
     getTaskSpringController,
     getTaskByIdSpringController,
-    putTaskSpringController,
+    createTaskSpringController,
+    updateTaskSpringController,
     deleteTaskSpringController
 } = require("../controllers/sprintController")
 
@@ -42,9 +43,10 @@ router.get("/:id/tasks", getSpring, getTaskSpringController);
 
 router.get("/:id/get-task/:taskId", getSpring, getTaskByIdSpringController);
 
-router.put("/:id/add-task", getSpring, putTaskSpringController);
+router.post("/:id/add-task", getSpring, createTaskSpringController);
+
+router.put("/:id/update-task/:taskId", getSpring, updateTaskSpringController);
 
 router.delete("/:id/delete-task/:taskId", getSpring, deleteTaskSpringController);
-
 
 module.exports = router

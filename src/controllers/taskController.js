@@ -37,7 +37,6 @@ const getAllTaskController = async (req, res) => {
     try {
         // obtenemos todas las tareas
         const tasks = await Task.find();
-        console.log("GET ALL tareas: ", tasks)
 
         // preguntamos que si las tareas existen
         if (tasks.length === 0) {
@@ -73,7 +72,6 @@ const postCreateTaskController = async (req, res) => {
     )
     try {
         const taskSaved = await newTask.save();
-        console.log("Nuevo usuario: ", taskSaved)
         res.status(201).json(taskSaved)
     } catch (error) {
         return res.status(400).json({
@@ -111,11 +109,11 @@ const patchTaskController = async (req, res) => {
     try {
 
         const task = res.task;
-        task.titulo = req.body.titulo || book.titulo;
-        task.descripcion = req.body.descripcion || book.descripcion;
-        task.estado = req.body.estado || book.estado;
-        task.fecha_limite = req.body.fecha_limite || book.fecha_limite;
-        task.color = req.body.color || book.color;
+        task.titulo = req.body.titulo || task.titulo;
+        task.descripcion = req.body.descripcion || task.descripcion;
+        task.estado = req.body.estado || task.estado;
+        task.fecha_limite = req.body.fecha_limite || task.fecha_limite;
+        task.color = req.body.color || task.color;
 
         const updateTask = await task.save();
         res.json(updateTask)

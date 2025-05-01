@@ -6,6 +6,13 @@ const cors = require("cors")
 
 config(); // Carga las variables de entorno
 
+// Configuración de CORS: Permitir solicitudes de cualquier origen (también puedes limitarlo a un dominio específico)
+const corsOptions = {
+  origin: "http://localhost:5173",  // Reemplaza esto con el dominio correcto si es necesario
+  methods: "GET,POST,PUT,DELETE",  // Métodos permitidos
+  allowedHeaders: "Content-Type,Authorization",  // Cabeceras permitidas
+};
+
 const taskRouters = require("./routes/tasks.routes");
 const springRouters = require("./routes/sprint.routes");
 const backlogRouters = require("./routes/backlog.routes");
@@ -17,7 +24,7 @@ const app = express();
 app.use(bodyParser.json());
 
 // coneccion con cors para usar en el front
-app.use(cors()) 
+app.use(cors(corsOptions)) 
 
 // Conexión con MongoDB Atlas
 mongoose.connect(process.env.MONGO_URL, {

@@ -6,13 +6,15 @@ const ExistBacklog = async (req, res, next) => {
 
     try {
         backlog = await Backlog.findOne();
-        if (backlog) {
-            res.backlog = backlog
-        } else {
-            res.backlog = new Backlog({
-                tarea: []
-            })
+
+        if (!backlog) {
+            // Si no existe, crear uno y guardarlo en la DB
+            backlog = new Backlog();
+            await backlog.save();
         }
+
+        res.backlog = backlog
+        next();
     } catch (err) {
         return res.status(500).json(
             {
@@ -21,12 +23,11 @@ const ExistBacklog = async (req, res, next) => {
         )
     }
 
-    next();
 }
 
 const getBacklogController = async (req, res) => {
     try {
-        const backlog = res.json(res.backlog);
+        const backlog = res.backlog;
 
         if (!backlog) {
             res.status(200).json(
@@ -36,7 +37,6 @@ const getBacklogController = async (req, res) => {
             );
         }
 
-        console.log("GET BACKLOG: ", backlog);
         res.status(200).json(backlog);
     } catch (error) {
         res.status(500).json({
@@ -47,7 +47,8 @@ const getBacklogController = async (req, res) => {
 
 const getTasksBacklogController = async (req, res) => {
     try {
-        const tasks = res.backlog.tareas;
+        const backlog = res.backlog;
+        const tasks = backlog.tareas;
         if (!tasks) {
             res.status(404).json(
                 {
@@ -55,7 +56,6 @@ const getTasksBacklogController = async (req, res) => {
                 }
             )
         }
-        console.log("GET TASKS: ", tasks)
         res.status(200).json(tasks)
     } catch (error) {
         res.status(500).json({
@@ -93,7 +93,7 @@ const getTaskByIdBacklogController = async (req, res) => {
     }
 }
 
-const postCreateTaskBacklogController = async (req, res) => {
+const createTaskBacklogController = async (req, res) => {
 
     // const { id } = req.params;
 
@@ -128,6 +128,49 @@ const postCreateTaskBacklogController = async (req, res) => {
 
 }
 
+
+const updateTaskBacklogController = async (req, res) => {
+    try {
+        const { id } = req.params;
+            const backlog = res.backlog;
+        
+            if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+              return res.status(404).json({ message: "El id de la tarea no es válido" });
+            }
+        
+            // Buscar la tarea en la base de datos
+            const task = await Task.findById(id);
+            if (!task) {
+              return res.status(404).json({ message: "La tarea no se encontró" });
+            }
+        
+            // Actualizar sus campos
+            task.titulo = req.body.titulo || task.titulo;
+            task.descripcion = req.body.descripcion || task.descripcion;
+            task.estado = req.body.estado || task.estado;
+            task.fecha_limite = req.body.fecha_limite || task.fecha_limite;
+            task.color = req.body.color || task.color;
+        
+            await task.save();
+        
+            // Actualizar la referencia en el spring
+            backlog.tareas = backlog.tareas.map((tarea) =>
+              tarea._id.equals(id) ? task : tarea
+            );
+        
+            await backlog.save();
+        
+            return res.status(200).json(task);
+
+    } catch (error) {
+        return res.status(500).json(
+            {
+                message: `Ocurrio un error en updateTaskSpringController: ${error.message}`
+            }
+        )
+    }
+}
+
 const deleteTaskBacklogController = async (req, res) => {
     const { id } = req.params
     const backlog = res.backlog;
@@ -135,7 +178,6 @@ const deleteTaskBacklogController = async (req, res) => {
         const index = backlog.tareas.findIndex((tarea) => tarea._id.equals(id));
         const [task_backlog] = backlog.tareas.splice(index, 1);
 
-        console.log("task a eliminar: ", task_backlog)
         const task = await Task.findById(id);
 
         if (task) {
@@ -174,7 +216,8 @@ module.exports = {
     getBacklogController,
     getTasksBacklogController,
     getTaskByIdBacklogController,
-    postCreateTaskBacklogController,
+    createTaskBacklogController,
+    updateTaskBacklogController,
     deleteTaskBacklogController,
     deleteBacklog
 }
