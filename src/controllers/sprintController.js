@@ -143,12 +143,6 @@ const getTaskSpringController = async (req, res) => {
 
         const tasks = spring.tareas;
 
-        if (!tasks || tasks.length === 0) {
-            return res.status(404).json({
-                message: "El spring no tiene tareas"
-            });
-        }
-
         res.status(200).json(tasks);
     } catch (err) {
         res.status(500).json({
@@ -200,7 +194,7 @@ const createTaskSpringController = async (req, res) => {
 
                 spring.tareas.push(task);
                 spring.save();
-                return res.json(task);
+                res.json(task);
 
             }).catch((error) => {
                 res.status(400).json({
@@ -210,7 +204,7 @@ const createTaskSpringController = async (req, res) => {
         }
 
     } catch (error) {
-        return res.status(500).json(
+        res.status(500).json(
             {
                 message: `Ocurrio un error en putTaskSpringController: ${error.message}`
             }
@@ -249,10 +243,10 @@ const updateTaskSpringController = async (req, res) => {
 
     await spring.save();
 
-    return res.status(200).json(task);
+    res.status(200).json(task);
 
   } catch (error) {
-    return res.status(500).json({
+    res.status(500).json({
       message: `Ocurrió un error en updateTaskSpringController: ${error.message}`
     });
   }

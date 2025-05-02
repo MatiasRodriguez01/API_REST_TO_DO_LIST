@@ -7,7 +7,12 @@ const spring = new mongoose.Schema(
         nombre: String,
         fecha_inicio: String,
         fecha_cierre: String,
-        tareas: [],
+        tareas: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Task"
+            }
+        ],
         color: String
     }
 )

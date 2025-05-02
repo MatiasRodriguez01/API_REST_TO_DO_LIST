@@ -49,13 +49,7 @@ const getTasksBacklogController = async (req, res) => {
     try {
         const backlog = res.backlog;
         const tasks = backlog.tareas;
-        if (!tasks) {
-            res.status(404).json(
-                {
-                    message: "Las tareas no existen"
-                }
-            )
-        }
+        
         res.status(200).json(tasks)
     } catch (error) {
         res.status(500).json({
