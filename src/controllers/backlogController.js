@@ -5,7 +5,7 @@ const ExistBacklog = async (req, res, next) => {
     let backlog;
 
     try {
-        backlog = await Backlog.findOne();
+        backlog = await Backlog.findOne().populate("tareas");
 
         if (!backlog) {
             // Si no existe, crear uno y guardarlo en la DB
@@ -101,9 +101,9 @@ const createTaskBacklogController = async (req, res) => {
             newTask.save().then((task) => {
                 const backlog = res.backlog;
 
-                backlog.tareas.push(task)
+                backlog.tareas.push(task._id)
                 backlog.save()
-                return res.json(task);
+                res.json(task);
 
             }).catch(error => {
                 res.status(400).json(
@@ -154,7 +154,7 @@ const updateTaskBacklogController = async (req, res) => {
         
             await backlog.save();
         
-            return res.status(200).json(task);
+            res.status(200).json(task);
 
     } catch (error) {
         return res.status(500).json(

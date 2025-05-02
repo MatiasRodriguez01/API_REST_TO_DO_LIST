@@ -22,7 +22,7 @@ router.get("/tasks", ExistBacklog, getTasksBacklogController)
 router.get("/task-backlog/:id", ExistBacklog, getTaskByIdBacklogController)
 
 // crear una tarea por id de backlog
-router.post("/create-task", ExistBacklog, createTaskBacklogController)
+router.put("/create-task", ExistBacklog, createTaskBacklogController)
 
 // editar una tarea por id de backlog
 router.put("/update-task/:id", ExistBacklog, updateTaskBacklogController);

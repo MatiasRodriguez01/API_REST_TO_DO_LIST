@@ -12,7 +12,7 @@ const getSpring = async (req, res, next) => {
     }
 
     try {
-        spring = await Spring.findById(id);
+        spring = await Spring.findById(id).populate("tareas");
         if (!spring) {
             return res.status(404).json(
                 {
@@ -182,74 +182,73 @@ const getTaskByIdSpringController = async (req, res) => {
 }
 
 const createTaskSpringController = async (req, res) => {
-
     try {
-        let task = req.body;
-
-        if (task) {
-            const newTask = new Task(task);
-
-            newTask.save().then((task) => {
-                const spring = res.spring;
-
-                spring.tareas.push(task);
-                spring.save();
-                res.json(task);
-
-            }).catch((error) => {
-                res.status(400).json({
-                    message: `Ocurrio un error al crear la tarea en el spring: ${error.message}`
-                })
-            })
-        }
-
+      const spring = res.spring 
+      const taskData = req.body;
+  
+      // Validación básica
+      if (!taskData) {
+        return res.status(400).json({
+          message: "La tarea no existe"
+        });
+      }
+  
+      // Crear y guardar la nueva tarea
+      const newTask = new Task(taskData);
+      const taskSaved = await newTask.save();
+  
+      // Agregar su _id al array de tareas de la spring
+      spring.tareas.push(taskSaved._id);
+      await spring.save();
+  
+      res.json(taskSaved);
+  
     } catch (error) {
-        res.status(500).json(
-            {
-                message: `Ocurrio un error en putTaskSpringController: ${error.message}`
-            }
-        )
+      res.status(500).json({
+        message: `Ocurrió un error en createTaskSpringController: ${error.message}`
+      });
     }
-}
+  }
+  
 
 const updateTaskSpringController = async (req, res) => {
-  try {
-    const { taskId } = req.params;
-    const spring = res.spring;
+    try {
+        const { taskId } = req.params;
+        const spring = res.spring;
 
-    if (!taskId.match(/^[0-9a-fA-F]{24}$/)) {
-      return res.status(404).json({ message: "El id de la tarea no es válido" });
+        if (!taskId.match(/^[0-9a-fA-F]{24}$/)) {
+            return res.status(404).json({ message: "El id de la tarea no es válido" });
+        }
+
+        // Buscar la tarea en la base de datos
+        const task = await Task.findById(taskId);
+        if (!task) {
+            return res.status(404).json({ message: "La tarea no se encontró" });
+        }
+
+        // Actualizar sus campos
+        task.titulo = req.body.titulo || task.titulo;
+        task.descripcion = req.body.descripcion || task.descripcion;
+        task.estado = req.body.estado || task.estado;
+        task.fecha_limite = req.body.fecha_limite || task.fecha_limite;
+        task.color = req.body.color || task.color;
+
+        await task.save();
+
+        // Actualizar la referencia en el spring
+        spring.tareas = spring.tareas.map((tarea) =>
+            tarea._id.equals(taskId) ? task : tarea
+        );
+
+        await spring.save();
+
+        res.status(200).json(task);
+
+    } catch (error) {
+        res.status(500).json({
+            message: `Ocurrió un error en updateTaskSpringController: ${error.message}`
+        });
     }
-
-    // Buscar la tarea en la base de datos
-    const task = await Task.findById(taskId);
-    if (!task) {
-      return res.status(404).json({ message: "La tarea no se encontró" });
-    }
-
-    // Actualizar sus campos
-    task.titulo = req.body.titulo || task.titulo;
-    task.descripcion = req.body.descripcion || task.descripcion;
-    task.estado = req.body.estado || task.estado;
-    task.fecha_limite = req.body.fecha_limite || task.fecha_limite;
-    task.color = req.body.color || task.color;
-
-    await task.save();
-
-    // Actualizar la referencia en el spring
-    spring.tareas = spring.tareas.map((tarea) =>
-      tarea._id.equals(taskId) ? task : tarea
-    );
-
-    await spring.save();
-
-    res.status(200).json(task);
-
-  } catch (error) {
-    res.status(500).json({
-      message: `Ocurrió un error en updateTaskSpringController: ${error.message}`
-    });
-  }
 };
 
 

@@ -45,7 +45,7 @@ router.get("/:id/tasks", getSpring, getTaskSpringController);
 router.get("/:id/get-task/:taskId", getSpring, getTaskByIdSpringController);
 
 // crear un tarea de una spring por id 
-router.post("/:id/add-task", getSpring, createTaskSpringController);
+router.put("/:id/add-task", getSpring, createTaskSpringController);
 
 // editar tarea de una spring por id
 router.put("/:id/update-task/:taskId", getSpring, updateTaskSpringController);
