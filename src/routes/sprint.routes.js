@@ -41,12 +41,16 @@ router.delete("/:id", getSpring, deletePatchController);
 // Mostrar las tareas de la spring
 router.get("/:id/tasks", getSpring, getTaskSpringController);
 
+// mostrar una tarea de una spring por id
 router.get("/:id/get-task/:taskId", getSpring, getTaskByIdSpringController);
 
+// crear un tarea de una spring por id 
 router.post("/:id/add-task", getSpring, createTaskSpringController);
 
+// editar tarea de una spring por id
 router.put("/:id/update-task/:taskId", getSpring, updateTaskSpringController);
 
+// eliminar una tarea de una spring por id
 router.delete("/:id/delete-task/:taskId", getSpring, deleteTaskSpringController);
 
 module.exports = router
